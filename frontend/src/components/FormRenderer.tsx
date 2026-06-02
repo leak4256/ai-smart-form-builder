@@ -38,7 +38,7 @@ export default function FormRenderer({ schema }: FormRendererProps) {
         if (!schemaError) {
             schemaError = 'לא נמצאה סכמת טופס להצגה.';
         }
-        return <p className="text-sm text-red-700">{schemaError}</p>;
+        return <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{schemaError}</p>;
     }
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -62,7 +62,7 @@ export default function FormRenderer({ schema }: FormRendererProps) {
             if (!response.ok) {
                 const serverMessage = typeof responseBody === 'object' && responseBody !== null && 'error' in responseBody
                     ? String(responseBody.error)
-                    : `Request failed with status ${response.status}`;
+                    : `הבקשה נכשלה (${response.status})`;
                 throw new Error(serverMessage);
             }
 
@@ -70,7 +70,7 @@ export default function FormRenderer({ schema }: FormRendererProps) {
             showToast('הטופס נשלח בהצלחה', 'success');
         } catch (error) {
             console.error('Error submitting form:', error);
-            const message = error instanceof Error ? error.message : 'Unknown error';
+            const message = error instanceof Error ? error.message : 'שגיאה לא ידועה';
             showToast(`שליחת הטופס נכשלה: ${message}`, 'error');
         } finally {
             setIsLoading(false);
@@ -78,18 +78,21 @@ export default function FormRenderer({ schema }: FormRendererProps) {
     }
 
     if (!resolvedSchema.fields?.length) {
-        return <p className="text-sm text-red-700">סכמת הטופס אינה מכילה שדות להצגה.</p>;
+        return <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">סכמת הטופס אינה מכילה שדות להצגה.</p>;
     }
 
+    const fieldClass =
+        'w-full rounded-lg border border-slate-300 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100';
+
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" dir="rtl">
             {
                 resolvedSchema.fields.map(field => (
 
                     <div key={field.id}>
-                        <label htmlFor={field.id} className="block text-sm font-medium text-slate-700">
+                        <label htmlFor={field.id} className="mb-1 block text-sm font-medium text-slate-700">
                             {field.label}
-                            {field.required && <span className="text-red-500 ml-1" aria-label="required">*</span>}
+                            {field.required && <span className="ms-1 text-red-500" aria-label="required">*</span>}
                         </label>
                         {field.type !== 'select' ? (
                             <input
@@ -98,14 +101,14 @@ export default function FormRenderer({ schema }: FormRendererProps) {
                                 type={field.type}
                                 required={field.required}
                                 onChange={(event) => setFormData({ ...formData, [field.id]: event.target.value })}
-                                className="w-full rounded-md border border-slate-300 p-3 text-sm text-slate-900 outline-none focus:border-slate-500" />
+                                className={fieldClass} />
                         ) : (
                             <select
                                 id={field.id}
                                 name={field.id}
                                 required={field.required}
                                 onChange={(event) => setFormData({ ...formData, [field.id]: event.target.value })}
-                                className="w-full rounded-md border border-slate-300 p-3 text-sm text-slate-900 outline-none focus:border-slate-500"
+                                className={fieldClass}
                             >
                                 {field.options?.map((option, index) => (
                                     <option key={index} value={option}>
@@ -122,7 +125,7 @@ export default function FormRenderer({ schema }: FormRendererProps) {
             <button
                 type="submit"
                 disabled={isLoading}
-                className="rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+                className="rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-emerald-300"
             >
                 {isLoading ? 'שולח...' : 'שליחה'}
             </button>

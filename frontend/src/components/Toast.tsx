@@ -35,7 +35,7 @@ export default function Toast({ open, message, type, onClose }: ToastProps) {
           onClick={onClose}
           className="rounded px-2 py-1 text-xs font-semibold hover:bg-black/5"
         >
-          Close
+          סגירה
         </button>
       </div>
     </div>
