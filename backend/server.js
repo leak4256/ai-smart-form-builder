@@ -51,27 +51,27 @@ app.post('/api/generate-form', async (req, res) => {
     return res.status(400).json({ error: 'A valid targetEmail is required' });
   }
 
- res.json({
-    targetEmail: targetEmail.trim(),
-    formTitle: "טופס לדוגמה",
-    fields: [
-  { id: "name", type: "text", label: "שם מלא", required: true, placeholder: "ישראל ישראלי" },
-  { id: "age", type: "number", label: "גיל", required: false, placeholder: "30" }
-]
- });
+//  res.json({
+//     targetEmail: targetEmail.trim(),
+//     formTitle: "טופס לדוגמה",
+//     fields: [
+//   { id: "name", type: "text", label: "שם מלא", required: true, placeholder: "ישראל ישראלי" },
+//   { id: "age", type: "number", label: "גיל", required: false, placeholder: "30" }
+// ]
+//  });
  
   try {
-    // const response = await openai.chat.completions.create({
-    //   model: "gpt-4o-mini", 
-    //   messages: [
-    //     { role: "system", content: SYSTEM_PROMPT },
-    //     { role: "user", content: `Create a form for: ${prompt}` }
-    //   ],
-    //   response_format: { type: "json_object" } 
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini", 
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: `Create a form for: ${prompt}` }
+      ],
+      response_format: { type: "json_object" } 
 
-    // });
-    // const generatedSchema = JSON.parse(response.choices[0].message.content);
-    // res.json(generatedSchema);
+    });
+    const generatedSchema = JSON.parse(response.choices[0].message.content);
+    res.json(generatedSchema);
 
   } catch (error) {
     console.error("OpenAI Error:", error);
@@ -94,11 +94,18 @@ app.post('/api/submit-form', async (req, res) => {
   }
 
   try {
-    let emailContent = `<h2>התקבלה תגובה חדשה לטופס שלך!</h2><ul>`;
+    let emailContent = `
+      <div dir="rtl" style="direction: rtl; text-align: right; font-family: Arial, sans-serif;">
+        <h2>התקבלה תגובה חדשה לטופס שלך!</h2>
+        <ul>
+    `;
     for (const [key, value] of Object.entries(submittedData)) {
       emailContent += `<li><strong>${key}:</strong> ${String(value ?? '')}</li>`;
     }
-    emailContent += `</ul>`;
+    emailContent += `
+        </ul>
+      </div>
+    `;
 
     await sendCustomEmail(targetEmail.trim(), '🔥 תגובה חדשה מהטופס החכם שלך!', emailContent);
     res.json({ success: true });
@@ -130,9 +137,11 @@ app.post('/api/distribute-form', async (req, res) => {
   const normalizedFormLink = formLink.trim();
   const emailSubject = 'קישור לטופס למילוי';
   const emailBody = `
-    <h2>קישור לטופס למילוי</h2>
-    <p>לחץ/י על הקישור הבא כדי למלא את הטופס:</p>
-    <p><a href="${normalizedFormLink}" target="_blank" rel="noopener noreferrer">${normalizedFormLink}</a></p>
+    <div dir="rtl" style="direction: rtl; text-align: right; font-family: Arial, sans-serif;">
+      <h2>קישור לטופס למילוי</h2>
+      <p>לחץ/י על הקישור הבא כדי למלא את הטופס:</p>
+      <p><a href="${normalizedFormLink}" target="_blank" rel="noopener noreferrer">${normalizedFormLink}</a></p>
+    </div>
   `;
 
   try {
