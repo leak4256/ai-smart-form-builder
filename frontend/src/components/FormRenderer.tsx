@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useToast } from "../context/ToastContext";
 import type { FormSchema } from "../types/form";
+import { buildApiUrl } from "../config/api";
 
 type FormRendererProps = {
     schema?: FormSchema;
@@ -44,7 +45,7 @@ export default function FormRenderer({ schema }: FormRendererProps) {
         event.preventDefault();
         setIsLoading(true);
         try {
-            const response = await fetch('http://localhost:5000/api/submit-form', {
+            const response = await fetch(buildApiUrl('/submit-form'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

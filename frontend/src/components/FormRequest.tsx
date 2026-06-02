@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import FormRenderer from './FormRenderer';
 import { useToast } from '../context/ToastContext';
 import type { FormSchema } from '../types/form';
+import { buildApiUrl } from '../config/api';
 
 export default function FormRequest() {
     const [userPrompt, setUserPrompt] = useState('');
@@ -13,8 +14,19 @@ export default function FormRequest() {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('עדיין אין נתונים.');
     const { showToast } = useToast();
+    const formRendererSectionRef = useRef<HTMLElement | null>(null);
 
-    const distributeForm = async () => {
+    useEffect(() => {
+        if (!schema) {
+            return;
+        }
+
+        formRendererSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, [schema]);
+
+    const distributeForm = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
         if (!shareableUrl) {
             showToast('יש ליצור טופס לפני ביצוע הפצה.', 'error');
             return;
@@ -39,7 +51,7 @@ export default function FormRequest() {
         }
 
         try {
-            const response = await fetch('http://localhost:5000/api/distribute-form', {
+            const response = await fetch(buildApiUrl('/distribute-form'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -88,7 +100,7 @@ export default function FormRequest() {
         setShareableUrl('');
 
         try {
-            const response = await fetch('http://localhost:5000/api/generate-form', {
+            const response = await fetch(buildApiUrl('/generate-form'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt: userPrompt, targetEmail })
@@ -150,16 +162,6 @@ export default function FormRequest() {
                     className="w-full rounded-md border border-slate-300 p-3 text-sm text-slate-900 outline-none focus:border-slate-500"
                 />
 
-                <label htmlFor="mailingList" className="block text-sm font-medium text-slate-700">
-                    רשימת תפוצה
-                </label>
-                <textarea
-                    id="mailingList"
-                    value={mailingList}
-                    onChange={(event) => setMailingList(event.target.value)}
-                    placeholder="name1@example.com, name2@example.com"
-                    className="h-24 w-full rounded-md border border-slate-300 p-3 text-sm text-slate-900 outline-none focus:border-slate-500"
-                />
 
                 <button
                     type="submit"
@@ -170,15 +172,30 @@ export default function FormRequest() {
                 </button>
             </form>
 
-            {!schema ? (
-                <p className="mt-4 text-sm text-slate-600">{loadingMessage}</p>
-            ) : (
-                <FormRenderer schema={schema} />
-            )}
 
             {shareableUrl && (
                 <section className="mt-6 rounded-md border border-slate-200 bg-slate-50 p-4">
-                    <h2 className="mb-2 text-sm font-semibold text-slate-900">קישור לשיתוף הטופס</h2>
+                    <form onSubmit={distributeForm} className="space-y-3">
+                        <label htmlFor="mailingList" className="block text-sm font-medium text-slate-700">
+                            רשימת תפוצה
+                        </label>
+                        <textarea
+                            id="mailingList"
+                            value={mailingList}
+                            onChange={(event) => setMailingList(event.target.value)}
+                            placeholder="name1@example.com, name2@example.com"
+                            className="h-24 w-full rounded-md border border-slate-300 bg-white p-3 text-sm text-slate-900 outline-none focus:border-slate-500"
+                        />
+
+                        <button
+                            type="submit"
+                            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700"
+                        >
+                            הפצה
+                        </button>
+                    </form>
+
+                    <h2 className="mb-2 mt-4 text-sm font-semibold text-slate-900">קישור לשיתוף הטופס</h2>
                     <p className="mb-2 text-sm text-slate-600">אפשר להעתיק ולשתף את הקישור הבא:</p>
                     <input
                         type="text"
@@ -187,17 +204,16 @@ export default function FormRequest() {
                         className="w-full rounded-md border border-slate-300 bg-white p-2 text-xs text-slate-900"
                         onFocus={(event) => event.currentTarget.select()}
                     />
-                    <button
-                        type="button"
-                        onClick={distributeForm}
-                        className="mt-3 rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700"
-                    >
-                        הפצה
-                    </button>
+                </section>
+            )}
+                        {!schema ? (
+                <p className="mt-4 text-sm text-slate-600">{loadingMessage}</p>
+            ) : (
+                <section ref={formRendererSectionRef} className="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <FormRenderer schema={schema} />
                 </section>
             )}
 
-            {/* <pre className="mt-5 overflow-x-auto rounded-md bg-slate-950 p-4 text-xs text-slate-100">{result}</pre> */}
         </main>
     );
 }

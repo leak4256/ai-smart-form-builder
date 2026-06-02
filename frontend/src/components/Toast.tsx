@@ -18,7 +18,7 @@ export default function Toast({ open, message, type, onClose }: ToastProps) {
   const icon = type === 'success' ? '✓' : '!';
 
   return (
-    <div className="fixed right-4 top-4 z-50 w-full max-w-sm">
+    <div className="fixed start-4 top-4 z-50 w-full max-w-sm">
       <div
         role="status"
         aria-live="polite"
