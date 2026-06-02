@@ -204,7 +204,7 @@ export default function FormRequest() {
                 <div className="mb-4 flex items-center justify-between gap-2">
                     <div>
                         <h2 className="text-base font-semibold text-slate-900">שלב 2: תצוגה והפצה</h2>
-                        <p className="mt-1 text-sm text-slate-600">בחרו למטה אם לבדוק את הטופס או להפיץ אותו לנמענים.</p>
+                        <p className="mt-1 text-sm text-slate-600"> כאן תוכלו לצפות בטופס ולהפץ אותו לנמענים</p>
                     </div>
                     {schema && <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-900">הטופס מוכן</span>}
                 </div>

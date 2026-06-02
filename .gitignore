@@ -7,6 +7,8 @@ dist/
 build/
 **/dist/
 **/build/
+dist-ssr/
+**/dist-ssr/
 
 # Coverage
 coverage/
@@ -28,6 +30,7 @@ lerna-debug.log*
 .vite/
 .eslintcache
 *.tsbuildinfo
+*.local
 
 # Environment variables (dotenv)
 .env
@@ -48,6 +51,11 @@ desktop.ini
 *.njsproj
 *.sln
 *.sw?
+
+# Keep shared VS Code recommendations for frontend workspace
+!frontend/.vscode/
+frontend/.vscode/*
+!frontend/.vscode/extensions.json
 
 # Temporary files
 tmp/
