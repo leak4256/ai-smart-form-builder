@@ -140,10 +140,10 @@ export default function FormRequest() {
     };
 
     const tabButtonClass = (tab: ActiveTab) =>
-        `rounded-lg px-4 py-2 text-sm font-semibold transition ${
+        `rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
             activeTab === tab
-                ? 'bg-emerald-700 text-white shadow-sm'
-                : 'bg-white text-slate-700 hover:bg-emerald-50'
+                ? 'bg-emerald-700 text-white shadow-md ring-2 ring-emerald-200'
+                : 'border border-transparent bg-slate-100 text-slate-700 hover:border-emerald-200 hover:bg-white'
         }`;
 
     const fieldClass =
@@ -204,7 +204,7 @@ export default function FormRequest() {
                 <div className="mb-4 flex items-center justify-between gap-2">
                     <div>
                         <h2 className="text-base font-semibold text-slate-900">שלב 2: תצוגה והפצה</h2>
-                        <p className="mt-1 text-sm text-slate-600"> כאן תוכלו לצפות בטופס ולהפץ אותו לנמענים</p>
+                        <p className="mt-1 text-sm text-slate-600">כאן תוכלו לצפות בטופס ולהפיץ אותו לנמענים.</p>
                     </div>
                     {schema && <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-900">הטופס מוכן</span>}
                 </div>
@@ -215,7 +215,7 @@ export default function FormRequest() {
                     </div>
                 ) : (
                     <>
-                        <div className="mb-4 flex gap-2 rounded-xl border border-emerald-100 bg-white p-2">
+                        <div className="mb-4 flex gap-2 rounded-xl border border-emerald-200 bg-emerald-100/30 p-2">
                             <button type="button" onClick={() => setActiveTab('preview')} className={tabButtonClass('preview')}>
                                 תצוגת הטופס
                             </button>
@@ -225,9 +225,24 @@ export default function FormRequest() {
                         </div>
 
                         {activeTab === 'preview' ? (
-                            <section className="rounded-xl border border-slate-200 bg-white p-4">
-                                <p className="mb-3 text-sm text-slate-600">כאן אפשר לבדוק איך הטופס נראה לפני שליחה לנמענים.</p>
-                                <FormRenderer schema={schema} />
+                            <section className="overflow-hidden rounded-2xl border-2 border-emerald-300 bg-gradient-to-b from-white to-emerald-50/40 shadow-md">
+                                <header className="border-b border-emerald-200 bg-white/90 p-4 sm:p-5">
+                                    <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-900">
+                                        <span className="inline-block h-2 w-2 rounded-full bg-emerald-700" aria-hidden="true" />
+                                        תצוגה חיה
+                                    </div>
+                                    <h3 className="text-lg font-bold text-slate-900">הטופס שנוצר</h3>
+                                    <p className="mt-1 text-sm text-slate-600">זה בדיוק הטופס שהנמענים יקבלו ויראו לפני שליחה.</p>
+                                </header>
+
+                                <div className="p-4 sm:p-5">
+                                    <div className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-900">
+                                        תחילת הטופס
+                                    </div>
+                                    <div className="rounded-xl border border-emerald-200 bg-white p-4 shadow-sm">
+                                        <FormRenderer schema={schema} />
+                                    </div>
+                                </div>
                             </section>
                         ) : (
                             <section className="rounded-xl border border-slate-200 bg-white p-4">
