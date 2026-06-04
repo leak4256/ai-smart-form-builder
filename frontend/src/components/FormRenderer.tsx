@@ -1,8 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useToast } from "../context/ToastContext";
+import { useToast } from "../context/useToast";
 import type { FormSchema } from "../types/form";
-import { buildApiUrl } from "../config/api";
+import { postJson } from "../shared/services/apiClient";
 
 type FormRendererProps = {
     schema?: FormSchema;
@@ -45,26 +45,10 @@ export default function FormRenderer({ schema }: FormRendererProps) {
         event.preventDefault();
         setIsLoading(true);
         try {
-            const response = await fetch(buildApiUrl('/submit-form'), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+            const responseBody = await postJson<{ success: boolean }>('/submit-form', {
                     targetEmail: resolvedSchema.targetEmail,
                     submittedData: formData
-                })
             });
-
-            const contentType = response.headers.get('content-type') ?? '';
-            const responseBody = contentType.includes('application/json')
-                ? await response.json()
-                : await response.text();
-
-            if (!response.ok) {
-                const serverMessage = typeof responseBody === 'object' && responseBody !== null && 'error' in responseBody
-                    ? String(responseBody.error)
-                    : `הבקשה נכשלה (${response.status})`;
-                throw new Error(serverMessage);
-            }
 
             console.log('Form submission response:', responseBody);
             showToast('הטופס נשלח בהצלחה', 'success');

@@ -1,15 +1,7 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import Toast from '../components/Toast';
-
-type ToastType = 'success' | 'error';
-
-type ToastContextValue = {
-  showToast: (message: string, type: ToastType) => void;
-  hideToast: () => void;
-};
-
-const ToastContext = createContext<ToastContextValue | undefined>(undefined);
+import { ToastContext, type ToastType } from './toastContext';
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -54,14 +46,4 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       <Toast open={open} type={type} message={message} onClose={hideToast} />
     </ToastContext.Provider>
   );
-}
-
-export function useToast() {
-  const context = useContext(ToastContext);
-
-  if (!context) {
-    throw new Error('useToast must be used within ToastProvider');
-  }
-
-  return context;
 }

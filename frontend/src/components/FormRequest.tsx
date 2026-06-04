@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import FormRenderer from './FormRenderer';
-import { useToast } from '../context/ToastContext';
+import { useToast } from '../context/useToast';
 import type { FormSchema } from '../types/form';
-import { buildApiUrl } from '../config/api';
+import { postJson } from '../shared/services/apiClient';
+import { getInvalidEmails, parseMailingList } from '../shared/utils/validation';
 
 type ActiveTab = 'preview' | 'distribution';
 
@@ -36,18 +37,14 @@ export default function FormRequest() {
             return;
         }
 
-        const emails = mailingList
-            .split(/[\s,;]+/)
-            .map((email) => email.trim())
-            .filter(Boolean);
+        const emails = parseMailingList(mailingList);
 
         if (!emails.length) {
             showToast('יש להזין לפחות כתובת מייל אחת להפצה.', 'error');
             return;
         }
 
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const invalidEmails = emails.filter((email) => !emailPattern.test(email));
+        const invalidEmails = getInvalidEmails(emails);
 
         if (invalidEmails.length > 0) {
             showToast('יש כתובות מייל לא תקינות ברשימת התפוצה.', 'error');
@@ -56,25 +53,15 @@ export default function FormRequest() {
 
         try {
             setIsDistributing(true);
-            const response = await fetch(buildApiUrl('/distribute-form'), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+            const data = await postJson<{
+                failedCount?: number;
+                failedEmails?: string[];
+                successCount?: number;
+                successfulEmails?: string[];
+            }>('/distribute-form', {
                     formLink: shareableUrl,
                     mailingList: emails
-                })
             });
-
-            const data = await response.json().catch(() => null);
-
-            if (!response.ok) {
-                const serverError =
-                    (data && typeof data.error === 'string' && data.error) ||
-                    (data && typeof data.message === 'string' && data.message) ||
-                    `שגיאת שרת (${response.status})`;
-                showToast(`ההפצה נכשלה: ${serverError}`, 'error');
-                return;
-            }
 
             const failedCount =
                 (data && typeof data.failedCount === 'number' && data.failedCount) ||
@@ -108,16 +95,10 @@ export default function FormRequest() {
         setActiveTab('preview');
 
         try {
-            const response = await fetch(buildApiUrl('/generate-form'), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: userPrompt, targetEmail })
+            const data = await postJson<Omit<FormSchema, 'targetEmail'>>('/generate-form', {
+                prompt: userPrompt,
+                targetEmail
             });
-            if (!response.ok) {
-                throw new Error(`הבקשה נכשלה (${response.status})`);
-            }
-
-            const data = await response.json();
             const schemaWithTargetEmail: FormSchema = {
                 ...data,
                 targetEmail
@@ -232,13 +213,10 @@ export default function FormRequest() {
                                         תצוגה חיה
                                     </div>
                                     <h3 className="text-lg font-bold text-slate-900">הטופס שנוצר</h3>
-                                    <p className="mt-1 text-sm text-slate-600">זה בדיוק הטופס שהנמענים יקבלו ויראו לפני שליחה.</p>
+                                    <p className="mt-1 text-sm text-slate-600">זה בדיוק הטופס שהנמענים שלך יקבלו.</p>
                                 </header>
 
                                 <div className="p-4 sm:p-5">
-                                    <div className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-900">
-                                        תחילת הטופס
-                                    </div>
                                     <div className="rounded-xl border border-emerald-200 bg-white p-4 shadow-sm">
                                         <FormRenderer schema={schema} />
                                     </div>
